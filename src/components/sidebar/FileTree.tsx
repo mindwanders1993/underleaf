@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import {
+  BookOpen,
   BookText,
   Cloud,
   FileCode,
@@ -19,6 +20,8 @@ import AssistantDrawer from '../ai/AssistantDrawer'
 import BackupModal from '../backup/BackupModal'
 import type { ProjectFile } from '../../types/project'
 import './FileTree.css'
+
+const LearnDrawer = lazy(() => import('../learn/LearnDrawer'))
 
 const TYPE_ICON: Record<ProjectFile['type'], typeof FileCode> = {
   tex: FileCode,
@@ -50,6 +53,8 @@ const FileTree = () => {
   const assistantTriggerRef = useRef<HTMLButtonElement>(null)
   const [backupOpen, setBackupOpen] = useState(false)
   const backupTriggerRef = useRef<HTMLButtonElement>(null)
+  const [learnOpen, setLearnOpen] = useState(false)
+  const learnTriggerRef = useRef<HTMLButtonElement>(null)
 
   const [creating, setCreating] = useState<{ name: string; type: ProjectFile['type'] } | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
@@ -354,6 +359,16 @@ const FileTree = () => {
         >
           <Cloud size={14} /> Backup &amp; sync
         </button>
+
+        <button
+          type="button"
+          className="ul-file-tree__mode-btn"
+          onClick={() => setLearnOpen(true)}
+          ref={learnTriggerRef}
+          data-testid="ul-learn-btn"
+        >
+          <BookOpen size={14} /> Learn
+        </button>
       </div>
 
       <TemplatePickerModal
@@ -390,6 +405,18 @@ const FileTree = () => {
           queueMicrotask(() => backupTriggerRef.current?.focus())
         }}
       />
+
+      {learnOpen && (
+        <Suspense fallback={null}>
+          <LearnDrawer
+            open={learnOpen}
+            onClose={() => {
+              setLearnOpen(false)
+              queueMicrotask(() => learnTriggerRef.current?.focus())
+            }}
+          />
+        </Suspense>
+      )}
     </div>
   )
 }
