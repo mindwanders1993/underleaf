@@ -56,14 +56,16 @@ stateDiagram-v2
     ERROR --> IDLE : Code Edited
 ```
 
-### 2.4 PDFPreview
-- **Purpose:** Renders the compiled PDF.
-- **Design:** 
-  - Wraps `react-pdf`'s `<Document>` and `<Page>`.
-  - Configures `GlobalWorkerOptions` to load `pdf.worker.min.mjs` locally.
-  - **State:** Maintains local state for `scale` (zoom level, default 1.0, min 0.5, max 3.0) and `pageNumber`.
-  - **Lifecycle:** When Store updates `pdfBlobUrl`, component revokes old URL (`URL.revokeObjectURL`) to prevent memory leaks and loads new URL.
-  - **Layers:** Ensures both `TextLayer` and `AnnotationLayer` are loaded for text selection and link clicking.
+### 2.4 PDFPreview (`src/components/preview/PDFPreview.tsx` — Module 3)
+- **Purpose:** Renders the compiled PDF from `compilationState.pdfBlobUrl`.
+- **Loading:** `React.lazy` import inside `PreviewPlaceholder` keeps `react-pdf` (~423 KB) and the `pdf.worker` (~1 MB) out of the initial bundle. Main bundle stays at ~230 KB.
+- **Worker:** `src/components/preview/pdfWorker.ts` is a side-effect module that sets `pdfjs.GlobalWorkerOptions.workerSrc` from `pdfjs-dist/build/pdf.worker.min.mjs?url` — bundled locally, no CDN.
+- **State split:**
+  - Outer `PDFPreview` owns `scale` (0.25–4.0, step 0.25), `fitWidth`, and the `ResizeObserver`-derived `containerWidth`. These survive across `file` changes.
+  - Inner `DocPane` is `key={file}`-ed so `pageNumber`, `pageCount`, and `loadError` reset cleanly on file change without violating React 19's "no setState during render" rule.
+- **Toolbar:** Prev/next page, page input, page count, zoom in/out/reset, fit-width toggle. Lucide icons; vanilla CSS in `PDFPreview.css`.
+- **Blob URL lifecycle:** Old URL revocation lives in `SwiftLatexEngine.trackBlobUrl()` (Module 2), not here — preview is pure consumer.
+- **Text/Annotation layers:** Both enabled so text selection and link clicks work.
 
 ### 2.5 FileTree
 - **Purpose:** Sidebar component managing project structure.

@@ -1,4 +1,7 @@
+import { Suspense, lazy } from 'react'
 import { useProjectStore } from '../../store/useProjectStore'
+
+const PDFPreview = lazy(() => import('./PDFPreview'))
 
 const PreviewPlaceholder = () => {
   const status = useProjectStore((s) => s.compilationState.status)
@@ -6,6 +9,21 @@ const PreviewPlaceholder = () => {
   const errors = useProjectStore((s) => s.compilationState.errors)
 
   const showColdStart = status === 'COMPILING' && !pdfBlobUrl
+  const showPdf = status === 'SUCCESS' && !!pdfBlobUrl
+
+  if (showPdf) {
+    return (
+      <Suspense
+        fallback={
+          <div className="ul-pdf-status" style={{ height: '100%' }}>
+            Loading preview…
+          </div>
+        }
+      >
+        <PDFPreview file={pdfBlobUrl} />
+      </Suspense>
+    )
+  }
 
   return (
     <div
@@ -61,7 +79,10 @@ const PreviewPlaceholder = () => {
             <ul style={{ textAlign: 'left', maxHeight: '60%', overflow: 'auto', margin: 0 }}>
               {errors.slice(0, 10).map((e, i) => (
                 <li key={i} style={{ marginBottom: 8 }}>
-                  <code>{e.file}:{e.line}</code> — {e.message}
+                  <code>
+                    {e.file}:{e.line}
+                  </code>{' '}
+                  — {e.message}
                 </li>
               ))}
             </ul>
@@ -72,16 +93,7 @@ const PreviewPlaceholder = () => {
           <>
             <h2 style={{ margin: 0 }}>Press Cmd/Ctrl + Enter to compile</h2>
             <p style={{ margin: 0, color: '#555' }}>
-              Your PDF will render here once Module 3 lands.
-            </p>
-          </>
-        )}
-
-        {status === 'SUCCESS' && pdfBlobUrl && (
-          <>
-            <h2 style={{ margin: 0, color: 'var(--color-accent-primary)' }}>Compiled</h2>
-            <p style={{ margin: 0, color: '#555', wordBreak: 'break-all' }}>
-              PDF blob ready at <code>{pdfBlobUrl.slice(0, 64)}…</code>
+              Your PDF will render here.
             </p>
           </>
         )}
