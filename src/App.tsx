@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useProjectStore } from './store/useProjectStore';
 import EditorLayout from './components/layout/EditorLayout';
+import OfflineBadge from './components/system/OfflineBadge';
 import { useCompileTrigger } from './hooks/useCompileTrigger';
 import { useProjectPersistence } from './hooks/useProjectPersistence';
 import { loadLlmSettings, saveLlmSettings } from './persistence/llmSettings';
@@ -30,7 +31,10 @@ function App() {
   }, [editorSettings.theme]);
 
   return (
-    <EditorLayout />
+    <>
+      <EditorLayout />
+      <OfflineBadge />
+    </>
   );
 }
 
