@@ -11,6 +11,7 @@ const stored: Project = {
   id: 'persisted',
   name: 'persisted demo',
   mainFile: 'main.tex',
+  mode: 'raw',
   files: [{ name: 'main.tex', type: 'tex', content: 'persisted body' }],
 }
 

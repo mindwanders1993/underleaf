@@ -13,6 +13,7 @@ const baseProject: Project = {
   id: 'p1',
   name: 'demo',
   mainFile: 'main.tex',
+  mode: 'raw',
   files: [{ name: 'main.tex', type: 'tex', content: 'hi' }],
 }
 
@@ -73,5 +74,17 @@ describe('localProject', () => {
     saveProject(baseProject)
     clearProject()
     expect(loadProject()).toBeNull()
+  })
+
+  it('normalizes mode to "raw" when a saved project predates Module 5', () => {
+    const legacy = {
+      id: 'legacy',
+      name: 'pre-m5',
+      mainFile: 'main.tex',
+      files: [{ name: 'main.tex', type: 'tex', content: 'hi' }],
+    }
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy))
+    const loaded = loadProject()
+    expect(loaded?.mode).toBe('raw')
   })
 })

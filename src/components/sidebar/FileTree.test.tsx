@@ -8,6 +8,7 @@ const fixture: Project = {
   id: 'fx',
   name: 'fx',
   mainFile: 'main.tex',
+  mode: 'raw',
   files: [
     { name: 'main.tex', type: 'tex', content: 'A' },
     { name: 'chapter.tex', type: 'tex', content: 'B' },
@@ -88,5 +89,27 @@ describe('FileTree', () => {
     expect(footer).toBeInTheDocument()
     expect(footer.textContent).toMatch(/%/)
     expect(footer.textContent).toMatch(/limit/)
+  })
+
+  it('switch-to-structured seeds resume + template, eject round-trips', () => {
+    render(<FileTree />)
+    const toggle = screen.getByTestId('ul-mode-toggle')
+    expect(toggle).toHaveTextContent(/structured/i)
+    fireEvent.click(toggle)
+
+    const after = useProjectStore.getState().currentProject!
+    expect(after.mode).toBe('structured')
+    expect(after.resume?.basics.name).toBeTruthy()
+    expect(after.templateId).toBe('jakes-resume')
+
+    const ejectBtn = screen.getByTestId('ul-mode-toggle')
+    expect(ejectBtn).toHaveTextContent(/eject/i)
+    fireEvent.click(ejectBtn)
+
+    const ejected = useProjectStore.getState().currentProject!
+    expect(ejected.mode).toBe('raw')
+    expect(ejected.resume).toBeUndefined()
+    const mainTex = ejected.files.find((f) => f.name === 'main.tex')!.content
+    expect(mainTex).toContain('\\documentclass')
   })
 })

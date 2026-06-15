@@ -1,14 +1,21 @@
+import type { ResumeData } from './resume'
+
 export interface ProjectFile {
   name: string // Relative file path, e.g., 'main.tex', 'refs.bib'
   content: string // File text content (or base64 encoded for binary assets like images)
   type: 'tex' | 'bib' | 'image' | 'other'
 }
 
+export type ProjectMode = 'raw' | 'structured'
+
 export interface Project {
   id: string
   name: string
   files: ProjectFile[]
   mainFile: string
+  mode: ProjectMode
+  resume?: ResumeData
+  templateId?: string
 }
 
 export type CompileStatus = 'IDLE' | 'COMPILING' | 'SUCCESS' | 'ERROR'

@@ -31,7 +31,10 @@ export function loadProject(): Project | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    return JSON.parse(raw) as Project
+    const parsed = JSON.parse(raw) as Partial<Project>
+    if (!parsed) return null
+    // Back-compat: projects saved before Module 5 lack `mode`.
+    return { ...parsed, mode: parsed.mode ?? 'raw' } as Project
   } catch (err) {
     console.warn('[underleaf] failed to load project from localStorage:', err)
     return null

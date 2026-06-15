@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { BookText, FileCode, FileText, Image as ImageIcon, MoreVertical, Plus } from 'lucide-react'
+import {
+  BookText,
+  FileCode,
+  FileText,
+  Image as ImageIcon,
+  MoreVertical,
+  Plus,
+} from 'lucide-react'
 import { useProjectStore } from '../../store/useProjectStore'
 import { useProjectSizeUsage } from '../../hooks/useProjectPersistence'
+import { DEFAULT_TEMPLATE_ID } from '../../templates'
+import { sampleResume } from '../../templates/sampleResume'
 import type { ProjectFile } from '../../types/project'
 import './FileTree.css'
 
@@ -26,6 +35,8 @@ const FileTree = () => {
   const createFile = useProjectStore((s) => s.createFile)
   const renameFile = useProjectStore((s) => s.renameFile)
   const deleteFile = useProjectStore((s) => s.deleteFile)
+  const setProjectMode = useProjectStore((s) => s.setProjectMode)
+  const ejectToRaw = useProjectStore((s) => s.ejectToRaw)
 
   const [creating, setCreating] = useState<{ name: string; type: ProjectFile['type'] } | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
@@ -279,6 +290,26 @@ const FileTree = () => {
               ? 'Over quota — recent changes are not being persisted.'
               : 'Project nearing localStorage limit.'}
           </div>
+        )}
+
+        {project.mode === 'raw' ? (
+          <button
+            type="button"
+            className="ul-file-tree__mode-btn"
+            onClick={() => setProjectMode('structured', sampleResume, DEFAULT_TEMPLATE_ID)}
+            data-testid="ul-mode-toggle"
+          >
+            <FileText size={14} /> Switch to structured
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="ul-file-tree__mode-btn"
+            onClick={ejectToRaw}
+            data-testid="ul-mode-toggle"
+          >
+            <FileCode size={14} /> Eject to raw .tex
+          </button>
         )}
       </div>
     </div>
