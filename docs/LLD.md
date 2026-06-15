@@ -110,12 +110,25 @@ stateDiagram-v2
 - Sections: `basics`, `work[]`, `education[]`, `projects[]`, `skills[]` (grouped category → items), optional `awards[]`.
 - Loosely inspired by JSON Resume, deliberately simpler — TypeScript is the only validator for now; zod arrives with the Module 7 form editor.
 
-### 2.12 TemplateRenderer (`src/templates/*` — Module 5)
+### 2.12 TemplateRenderer (`src/templates/*` — Modules 5–6)
 - Interface: `{ id, name, description, render(data: ResumeData): { mainTex, files: ProjectFile[] } }`.
-- Registry in `src/templates/index.ts` keyed by id; `getTemplate(id)` lookup, `listTemplates()` enumeration, `DEFAULT_TEMPLATE_ID` for new projects.
-- First template: `src/templates/jakes-resume/` — single-column, ATS-friendly developer resume using only `geometry`, `enumitem`, `hyperref`, `titlesec` (all available under SwiftLaTeX).
+- Registry in `src/templates/index.ts` keyed by id; `getTemplate(id)` lookup, `listTemplates()` enumeration, `DEFAULT_TEMPLATE_ID` (= `jakes-resume`) for new projects.
+- Templates shipped (Module 6 added the latter three):
+  - **`jakes-resume`** — single column, ATS-friendly; `geometry` + `enumitem` + `hyperref` + `titlesec`.
+  - **`deedy-cv`** — two-column via `minipage`; skills/education left, experience/projects right.
+  - **`awesome-cv`** — single column with `xcolor` accent on name + section headers.
+  - **`rendercv-modern`** — minimalist, `parskip` spacing, small-caps lowercase section headers, side dates.
 - All user content runs through `escapeLatex` (single-pass char-class regex — never double-escapes braces emitted by other replacements).
 - Sample fixture in `src/templates/sampleResume.ts` is seeded when a user first switches to structured mode.
+
+### 2.14 TemplatePickerModal (`src/components/templates/TemplatePickerModal.tsx` — Module 6)
+- Modal listing every registered template as a card (name + description + selected badge).
+- Opens from FileTree footer "Browse templates" button. Esc / backdrop click closes; focus returns to trigger.
+- Picking a template:
+  - In `raw` mode: calls `setProjectMode('structured', sampleResume, id)` — auto-switches and seeds.
+  - In `structured` mode: calls `setTemplate(id)` only.
+- Keyboard-accessible: first card receives focus on open; Esc closes.
+- No thumbnails yet (deferred — would require server-side or cached PDF render).
 
 ### 2.13 Dual-mode Project (Module 5)
 - `Project.mode: 'raw' | 'structured'` with optional `resume: ResumeData` and `templateId: string` companions.

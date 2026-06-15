@@ -4,6 +4,7 @@ import {
   FileCode,
   FileText,
   Image as ImageIcon,
+  LayoutGrid,
   MoreVertical,
   Plus,
 } from 'lucide-react'
@@ -11,6 +12,7 @@ import { useProjectStore } from '../../store/useProjectStore'
 import { useProjectSizeUsage } from '../../hooks/useProjectPersistence'
 import { DEFAULT_TEMPLATE_ID } from '../../templates'
 import { sampleResume } from '../../templates/sampleResume'
+import TemplatePickerModal from '../templates/TemplatePickerModal'
 import type { ProjectFile } from '../../types/project'
 import './FileTree.css'
 
@@ -36,7 +38,10 @@ const FileTree = () => {
   const renameFile = useProjectStore((s) => s.renameFile)
   const deleteFile = useProjectStore((s) => s.deleteFile)
   const setProjectMode = useProjectStore((s) => s.setProjectMode)
+  const setTemplate = useProjectStore((s) => s.setTemplate)
   const ejectToRaw = useProjectStore((s) => s.ejectToRaw)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const pickerTriggerRef = useRef<HTMLButtonElement>(null)
 
   const [creating, setCreating] = useState<{ name: string; type: ProjectFile['type'] } | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
@@ -311,7 +316,35 @@ const FileTree = () => {
             <FileCode size={14} /> Eject to raw .tex
           </button>
         )}
+
+        <button
+          type="button"
+          className="ul-file-tree__mode-btn"
+          onClick={() => setPickerOpen(true)}
+          ref={pickerTriggerRef}
+          data-testid="ul-templates-btn"
+        >
+          <LayoutGrid size={14} /> Browse templates
+        </button>
       </div>
+
+      <TemplatePickerModal
+        open={pickerOpen}
+        selectedId={project.templateId ?? null}
+        onPick={(id) => {
+          if (project.mode === 'raw') {
+            setProjectMode('structured', sampleResume, id)
+          } else {
+            setTemplate(id)
+          }
+          setPickerOpen(false)
+          queueMicrotask(() => pickerTriggerRef.current?.focus())
+        }}
+        onClose={() => {
+          setPickerOpen(false)
+          queueMicrotask(() => pickerTriggerRef.current?.focus())
+        }}
+      />
     </div>
   )
 }
