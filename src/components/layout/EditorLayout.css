@@ -1,0 +1,123 @@
+.ul-editor-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--color-bg);
+}
+
+.ul-sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.ul-editor-pane {
+  flex-grow: 1;
+  min-width: 0; /* Prevent flex blowout */
+  display: flex;
+  flex-direction: column;
+}
+
+.ul-preview-pane {
+  flex-grow: 1;
+  min-width: 0;
+  background-color: var(--color-surface2);
+  border-left: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Draggable Resizer */
+.ul-resizer {
+  width: 4px;
+  cursor: col-resize;
+  background-color: var(--color-border);
+  transition: background-color 0.2s ease;
+  z-index: 10;
+}
+
+.ul-resizer:hover, .ul-resizer:active {
+  background-color: var(--color-accent-primary);
+}
+
+/* Mobile Tab Bar */
+.ul-mobile-tabs {
+  display: none;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  height: 60px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.ul-mobile-tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.ul-mobile-tab-btn.active {
+  color: var(--color-accent-primary);
+}
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .ul-sidebar {
+    position: absolute;
+    height: 100%;
+    z-index: 20;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .ul-sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+  }
+}
+
+@media (max-width: 768px) {
+  .ul-editor-layout {
+    flex-direction: column;
+  }
+
+  .ul-main-area {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .ul-mobile-tabs {
+    display: flex;
+  }
+
+  /* In mobile, we only show one pane based on active tab. The logic is handled in React by conditionally rendering */
+  .ul-sidebar, .ul-editor-pane, .ul-preview-pane {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform: none;
+    border: none;
+    display: none; /* Hidden by default, shown by React style */
+  }
+}
+
+/* Resizing state overrides */
+.ul-editor-layout.is-dragging,
+.ul-editor-layout.is-dragging * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
