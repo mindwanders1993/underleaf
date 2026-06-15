@@ -137,4 +137,10 @@ describe('FileTree', () => {
     expect(useProjectStore.getState().currentProject!.templateId).toBe('awesome-cv')
     expect(useProjectStore.getState().currentProject!.mode).toBe('structured')
   })
+
+  it('AI Assist button opens the drawer', () => {
+    render(<FileTree />)
+    fireEvent.click(screen.getByTestId('ul-assistant-btn'))
+    expect(screen.getByTestId('ul-assistant')).toBeInTheDocument()
+  })
 })

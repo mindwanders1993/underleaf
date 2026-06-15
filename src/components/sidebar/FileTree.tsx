@@ -7,12 +7,14 @@ import {
   LayoutGrid,
   MoreVertical,
   Plus,
+  Sparkles,
 } from 'lucide-react'
 import { useProjectStore } from '../../store/useProjectStore'
 import { useProjectSizeUsage } from '../../hooks/useProjectPersistence'
 import { DEFAULT_TEMPLATE_ID } from '../../templates'
 import { sampleResume } from '../../templates/sampleResume'
 import TemplatePickerModal from '../templates/TemplatePickerModal'
+import AssistantDrawer from '../ai/AssistantDrawer'
 import type { ProjectFile } from '../../types/project'
 import './FileTree.css'
 
@@ -42,6 +44,8 @@ const FileTree = () => {
   const ejectToRaw = useProjectStore((s) => s.ejectToRaw)
   const [pickerOpen, setPickerOpen] = useState(false)
   const pickerTriggerRef = useRef<HTMLButtonElement>(null)
+  const [assistantOpen, setAssistantOpen] = useState(false)
+  const assistantTriggerRef = useRef<HTMLButtonElement>(null)
 
   const [creating, setCreating] = useState<{ name: string; type: ProjectFile['type'] } | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
@@ -326,6 +330,16 @@ const FileTree = () => {
         >
           <LayoutGrid size={14} /> Browse templates
         </button>
+
+        <button
+          type="button"
+          className="ul-file-tree__mode-btn"
+          onClick={() => setAssistantOpen(true)}
+          ref={assistantTriggerRef}
+          data-testid="ul-assistant-btn"
+        >
+          <Sparkles size={14} /> AI Assist
+        </button>
       </div>
 
       <TemplatePickerModal
@@ -343,6 +357,14 @@ const FileTree = () => {
         onClose={() => {
           setPickerOpen(false)
           queueMicrotask(() => pickerTriggerRef.current?.focus())
+        }}
+      />
+
+      <AssistantDrawer
+        open={assistantOpen}
+        onClose={() => {
+          setAssistantOpen(false)
+          queueMicrotask(() => assistantTriggerRef.current?.focus())
         }}
       />
     </div>

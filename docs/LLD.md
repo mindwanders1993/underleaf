@@ -121,6 +121,21 @@ stateDiagram-v2
 - All user content runs through `escapeLatex` (single-pass char-class regex — never double-escapes braces emitted by other replacements).
 - Sample fixture in `src/templates/sampleResume.ts` is seeded when a user first switches to structured mode.
 
+### 2.15 LLM client (`src/llm/*` — Module 7)
+- `LLMClient` interface: `complete({ system?, user, model?, temperature? }): Promise<{ text, raw }>`.
+- Adapters: `createGeminiClient` (Google Gemini, `v1beta` `generateContent`, browser-callable with `key=`), `createOllamaClient` (local `${host}/api/chat`, default `http://localhost:11434`).
+- `getLLMClient(settings)` factory; `LLM_PROVIDERS` registry with display names, default model, suggested models, BYO-key flag.
+- Settings persistence in `src/persistence/llmSettings.ts` under `underleaf.llm.v1` — **separate from the project payload**.
+- Store slice: `llmSettings: { provider, model, apiKey?, ollamaHost? }` + `setLlmSettings(patch)`.
+- App.tsx hydrates settings on mount and saves on every change (no debounce — the slice is small and rarely written).
+
+### 2.16 AI Assistant (`src/ai/*` + `src/components/ai/*` — Module 7)
+- `src/ai/atsHints.ts` — pure heuristic checks (no LLM). Flags missing summary/email/work/skills, weak verbs, bullets without metrics, bullets > 35 words. Returns `AtsHint[]` with `severity: info|warning|error`.
+- `src/ai/jdMatcher.ts` — calls the configured LLM with a strict-JSON system prompt; tolerates `\`\`\`json` fences and a leading sentence; clamps `score` into 0–100; drops malformed suggestion entries; throws with `cause` on parse failure.
+- `AssistantDrawer.tsx` — right-side slide-in. Three tabs: ATS Hints, JD Match, Settings. Esc closes; backdrop click closes; focus returns to FileTree trigger.
+- `AtsHintsPanel`, `JdMatchPanel`, `LlmSettingsPanel` are dumb panel components. JdMatchPanel disables Analyze unless `isProviderConfigured(llmSettings)` returns true. LlmSettingsPanel has a "Test connection" button that sends a 1-word ping.
+- **Gating:** in `raw` mode the drawer shows a stub explaining that AI features run on structured `resume` data; the Settings tab still works so users can configure providers early.
+
 ### 2.14 TemplatePickerModal (`src/components/templates/TemplatePickerModal.tsx` — Module 6)
 - Modal listing every registered template as a card (name + description + selected badge).
 - Opens from FileTree footer "Browse templates" button. Esc / backdrop click closes; focus returns to trigger.
