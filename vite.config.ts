@@ -44,10 +44,13 @@ export default defineConfig({
     }),
   ],
   server: {
-    // SwiftLaTeX uses SharedArrayBuffer; cross-origin isolation headers required.
+    // SwiftLaTeX needs SharedArrayBuffer → cross-origin isolation.
+    // `credentialless` (not `require-corp`) still gives us crossOriginIsolated
+    // while permitting fetches to providers like local Ollama (http://localhost:11434)
+    // and Google Gemini that don't emit Cross-Origin-Resource-Policy headers.
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
     },
   },
   test: {
