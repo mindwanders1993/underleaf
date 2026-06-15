@@ -67,13 +67,18 @@ stateDiagram-v2
 - **Blob URL lifecycle:** Old URL revocation lives in `SwiftLatexEngine.trackBlobUrl()` (Module 2), not here — preview is pure consumer.
 - **Text/Annotation layers:** Both enabled so text selection and link clicks work.
 
-### 2.5 FileTree
-- **Purpose:** Sidebar component managing project structure.
-- **Design:**
-  - Renders files based on `Project.files` array.
-  - Uses specific SVG icons for `.tex`, `.bib`, and image files.
-  - Handles drag-and-drop for reordering or uploading files via HTML5 `FileReader` API (converts images to base64 for local storage or holds binary blob depending on size).
-  - Context menu on right-click (Rename, Delete).
+### 2.5 FileTree (`src/components/sidebar/FileTree.tsx` — Module 4)
+- **Purpose:** Sidebar file browser. Replaces the placeholder body of `SidebarPlaceholder` (filename preserved so `EditorLayout` doesn't change).
+- **Operations:** Click `.tex` row → store `setMainFile`; New file via inline form (Enter to commit, Esc to cancel; dedupes via existing `createFile` behavior + inline error); Right-click row → contextual Rename/Delete; Delete uses `window.confirm`.
+- **Icons:** Lucide — `FileCode` (tex), `BookText` (bib), `Image` (image), `FileText` (other).
+- **Capacity footer:** Reads `useProjectSizeUsage()`. Renders bytes + percent + bar; turns warning at >80 %, danger at >100 %.
+- **State:** All mutations route through Zustand actions (`setMainFile`, `createFile`, `renameFile`, `deleteFile`). FileTree owns only local editing/menu state.
+
+### 2.5b Persistence (`src/persistence/localProject.ts` + `src/hooks/useProjectPersistence.ts` — Module 4)
+- **Storage key:** `underleaf.project.v1` in `localStorage`.
+- **Quota:** 5 MB upper bound. `estimatePayloadBytes` returns `JSON.stringify(project).length * 2` (UTF-16). `saveProject` refuses to write when over quota — the prior good copy stays intact.
+- **Hook:** `useProjectPersistence()` mounted in `App.tsx`. On first render, hydrates from storage if present. On every `currentProject` change, debounces 300 ms and calls `saveProject`. Hydration runs before any save attempt so a saved project overrides the in-memory default.
+- **Size selector:** `useProjectSizeUsage()` returns `{ bytes, limit, usagePercent }`. `FileTree` footer subscribes to it.
 
 ### 2.6 ErrorLog
 - **Purpose:** Parses LaTeX build logs into actionable UI.
@@ -98,11 +103,7 @@ stateDiagram-v2
   - Detects `window.matchMedia('(prefers-color-scheme: dark)')` on initial load if no user preference is stored.
 
 ### 2.9 StorageService
-- **Purpose:** Local persistence layer.
-- **Design:**
-  - Listens to Zustand store subscriptions. On change, debounces (1s) and serializes current `Project` to JSON via `localStorage.setItem('underleaf_project', json)`.
-  - Implements quota checks before saving (browser limits ~5MB). Warns user if nearing limit.
-  - Provides a utility to export the entire project as a `.zip` file using `jszip`.
+**Superseded by §2.5b Persistence (Module 4)**. Zip export remains a future module. Keep this entry as a pointer.
 
 ### 2.10 Toolbar
 - **Purpose:** Top navigation and action bar.

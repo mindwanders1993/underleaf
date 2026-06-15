@@ -87,6 +87,7 @@ interface ProjectStoreState {
 
   // Project Actions
   setCurrentProject: (project: Project | null) => void
+  setMainFile: (fileName: string) => void
   updateFileContent: (fileName: string, content: string) => void
   createFile: (fileName: string, type: 'tex' | 'bib' | 'image' | 'other', initialContent?: string) => void
   deleteFile: (fileName: string) => void
@@ -133,6 +134,18 @@ export const useProjectStore = create<ProjectStoreState>((set) => ({
 
   // Project Actions
   setCurrentProject: (project) => set({ currentProject: project }),
+
+  setMainFile: (fileName) =>
+    set((state) => {
+      if (!state.currentProject) return {}
+      if (!state.currentProject.files.some((f) => f.name === fileName)) return {}
+      return {
+        currentProject: {
+          ...state.currentProject,
+          mainFile: fileName,
+        },
+      }
+    }),
 
   updateFileContent: (fileName, content) =>
     set((state) => {
