@@ -1,25 +1,44 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import type { Monaco } from '@monaco-editor/react';
 import { useProjectStore } from '../../store/useProjectStore';
 import { latexGrammar } from './latexGrammar';
+import { getLLMClient, isProviderConfigured } from '../../llm';
+import { rewriteForImpact } from '../../ai/rewriteForImpact';
+import type { ResumeData } from '../../types/resume';
 
 const MonacoEditor = () => {
   const { currentProject, editorSettings, updateFileContent, setCompileStatus } = useProjectStore();
+  const setResume = useProjectStore((s) => s.setResume);
+  const llmSettings = useProjectStore((s) => s.llmSettings);
 
+  const projectMode = currentProject?.mode ?? 'raw';
+  const resume = currentProject?.resume;
   const mainFile = currentProject?.mainFile || '';
   const fileContent = currentProject?.files.find((f) => f.name === mainFile)?.content || '';
 
-  // Local state to manage editor value without lag/cursor issues during debounced sync
-  const [localValue, setLocalValue] = useState(fileContent);
-  const [prevFileContent, setPrevFileContent] = useState(fileContent);
-  const [prevMainFile, setPrevMainFile] = useState(mainFile);
+  const isStructured = projectMode === 'structured';
+  const structuredText = useMemo(
+    () => (resume ? JSON.stringify(resume, null, 2) : '{}'),
+    [resume],
+  );
+  const displayContent = isStructured ? structuredText : fileContent;
+  const displayMainFile = isStructured ? 'resume.json' : mainFile;
+  const displayLanguage = isStructured ? 'json' : 'latex';
 
-  // Sync local state when the main file or its contents are switched externally
-  if (fileContent !== prevFileContent || mainFile !== prevMainFile) {
-    setLocalValue(fileContent);
-    setPrevFileContent(fileContent);
-    setPrevMainFile(mainFile);
+  // Local state to manage editor value without lag/cursor issues during debounced sync
+  const [localValue, setLocalValue] = useState(displayContent);
+  const [prevDisplayContent, setPrevDisplayContent] = useState(displayContent);
+  const [prevMainFile, setPrevMainFile] = useState(displayMainFile);
+  const [rewriteStatus, setRewriteStatus] = useState<string | null>(null);
+  const [jsonError, setJsonError] = useState<string | null>(null);
+
+  // Sync local state when the displayed content or label changes externally (file switch, mode switch, eject)
+  if (displayContent !== prevDisplayContent || displayMainFile !== prevMainFile) {
+    setLocalValue(displayContent);
+    setPrevDisplayContent(displayContent);
+    setPrevMainFile(displayMainFile);
+    setJsonError(null);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,7 +48,11 @@ const MonacoEditor = () => {
   // References to keep callbacks current without resetting editor command/listener closures
   const updateFileContentRef = useRef(updateFileContent);
   const setCompileStatusRef = useRef(setCompileStatus);
+  const setResumeRef = useRef(setResume);
   const mainFileRef = useRef(mainFile);
+  const isStructuredRef = useRef(isStructured);
+  const llmSettingsRef = useRef(llmSettings);
+  const setRewriteStatusRef = useRef(setRewriteStatus);
 
   useEffect(() => {
     updateFileContentRef.current = updateFileContent;
@@ -40,8 +63,20 @@ const MonacoEditor = () => {
   }, [setCompileStatus]);
 
   useEffect(() => {
+    setResumeRef.current = setResume;
+  }, [setResume]);
+
+  useEffect(() => {
     mainFileRef.current = mainFile;
   }, [mainFile]);
+
+  useEffect(() => {
+    isStructuredRef.current = isStructured;
+  }, [isStructured]);
+
+  useEffect(() => {
+    llmSettingsRef.current = llmSettings;
+  }, [llmSettings]);
 
   // Clean up debounce timer on unmount
   useEffect(() => {
@@ -61,10 +96,59 @@ const MonacoEditor = () => {
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      if (mainFileRef.current) {
+      if (isStructuredRef.current) {
+        try {
+          const parsed = JSON.parse(newValue) as ResumeData;
+          setResumeRef.current(parsed);
+          setJsonError(null);
+        } catch (err) {
+          setJsonError((err as Error).message);
+        }
+      } else if (mainFileRef.current) {
         updateFileContentRef.current(mainFileRef.current, newValue);
       }
     }, 500);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const runRewriteForImpact = async (editor: any) => {
+    if (isStructuredRef.current) return; // raw-mode-only action
+    if (!isProviderConfigured(llmSettingsRef.current)) {
+      setRewriteStatusRef.current('Configure an LLM provider in AI Assist → Settings.');
+      window.setTimeout(() => setRewriteStatusRef.current(null), 3500);
+      return;
+    }
+    const model = editor.getModel();
+    if (!model) return;
+    const selection = editor.getSelection();
+    if (!selection) return;
+    const isCollapsed =
+      selection.startLineNumber === selection.endLineNumber &&
+      selection.startColumn === selection.endColumn;
+    const range = isCollapsed
+      ? {
+          startLineNumber: selection.startLineNumber,
+          startColumn: 1,
+          endLineNumber: selection.startLineNumber,
+          endColumn: model.getLineMaxColumn(selection.startLineNumber),
+        }
+      : selection;
+    const original = model.getValueInRange(range) as string;
+    if (!original.trim()) return;
+
+    setRewriteStatusRef.current('rewriting…');
+    try {
+      const client = getLLMClient(llmSettingsRef.current);
+      const rewritten = await rewriteForImpact(original, client);
+      editor.executeEdits('underleaf.rewriteForImpact', [
+        { range, text: rewritten, forceMoveMarkers: true },
+      ]);
+      setRewriteStatusRef.current(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setRewriteStatusRef.current(`error: ${message}`);
+      window.setTimeout(() => setRewriteStatusRef.current(null), 4000);
+    }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -77,7 +161,7 @@ const MonacoEditor = () => {
 
     if (!isLatexRegistered) {
       monaco.languages.register({ id: 'latex' });
-      
+
       // Register custom Monarch syntax highlighter
       monaco.languages.setMonarchTokensProvider('latex', latexGrammar);
 
@@ -328,9 +412,21 @@ const MonacoEditor = () => {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
       setCompileStatusRef.current('COMPILING');
     });
+
+    // Module 8 — Underleaf inline AI action (raw mode only; gated at runtime).
+    editor.addAction({
+      id: 'underleaf.rewriteForImpact',
+      label: 'Underleaf: Rewrite for impact',
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyR],
+      contextMenuGroupId: '1_modification',
+      contextMenuOrder: 1.5,
+      run: () => runRewriteForImpact(editor),
+    });
   };
 
   const themeName = editorSettings.theme === 'light' ? 'underleaf-light' : 'underleaf-dark';
+  const headerLabel = isStructured ? 'JSON' : 'LaTeX';
+  const statusText = rewriteStatus ?? (isStructured && jsonError ? `JSON: ${jsonError.slice(0, 60)}` : null);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'hidden' }}>
@@ -356,29 +452,44 @@ const MonacoEditor = () => {
             letterSpacing: '0.5px',
           }}
         >
-          {mainFile || 'No file selected'}
+          {displayMainFile || 'No file selected'}
         </span>
-        <span
-          style={{
-            fontSize: '0.7rem',
-            fontFamily: 'var(--font-ui)',
-            fontWeight: '500',
-            color: 'var(--color-text-secondary)',
-            background: 'var(--color-surface2)',
-            padding: '2px 8px',
-            borderRadius: '4px',
-            border: '1px solid var(--color-border)',
-          }}
-        >
-          LaTeX
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
+          {statusText && (
+            <span
+              data-testid="ul-editor-status"
+              style={{
+                fontSize: '0.7rem',
+                fontFamily: 'var(--font-ui)',
+                color: jsonError && !rewriteStatus ? 'var(--color-danger)' : 'var(--color-accent-primary)',
+                fontStyle: 'italic',
+              }}
+            >
+              {statusText}
+            </span>
+          )}
+          <span
+            style={{
+              fontSize: '0.7rem',
+              fontFamily: 'var(--font-ui)',
+              fontWeight: '500',
+              color: 'var(--color-text-secondary)',
+              background: 'var(--color-surface2)',
+              padding: '2px 8px',
+              borderRadius: '4px',
+              border: '1px solid var(--color-border)',
+            }}
+          >
+            {headerLabel}
+          </span>
+        </div>
       </div>
 
       {/* Monaco Editor Container */}
       <div style={{ flex: 1, minHeight: 0, width: '100%' }}>
         <Editor
           height="100%"
-          language="latex"
+          language={displayLanguage}
           theme={themeName}
           value={localValue}
           onChange={handleEditorChange}

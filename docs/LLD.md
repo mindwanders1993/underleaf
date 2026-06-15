@@ -136,6 +136,13 @@ stateDiagram-v2
 - `AtsHintsPanel`, `JdMatchPanel`, `LlmSettingsPanel` are dumb panel components. JdMatchPanel disables Analyze unless `isProviderConfigured(llmSettings)` returns true. LlmSettingsPanel has a "Test connection" button that sends a 1-word ping.
 - **Gating:** in `raw` mode the drawer shows a stub explaining that AI features run on structured `resume` data; the Settings tab still works so users can configure providers early.
 
+### 2.17 AI rewrite + apply path (Modules 5–8)
+- `src/ai/applySuggestion.ts` — exact-match locator that takes a `JdSuggestion` plus a `ResumeData`, finds the matching bullet in `work[*].highlights[*]`, and returns either `{ ok: true, resume, workIndex, highlightIndex }` or `{ ok: false, reason }`. Pure function; idempotent (second apply against same bullet fails with `not found`).
+- `src/ai/rewriteForImpact.ts` — pure async helper. Takes a line of text + an `LLMClient`, returns the rewrite. Strips wrapping quotes, list markers, and common preamble ("Output:", "Rewrite:"). Returns the input on empty LLM output (no flicker).
+- `MonacoEditor` registers an action `underleaf.rewriteForImpact` (id, label "Underleaf: Rewrite for impact", `Cmd/Ctrl + Alt + R`, context-menu group `1_modification`). It captures the selection or the current line, calls the LLM via the existing settings, and replaces the range. While in flight the editor header shows `rewriting…`; on error the header shows the message for 4 seconds and the text is untouched.
+- `MonacoEditor` in **structured mode** swaps to a `JSON.stringify(resume, null, 2)` virtual document with `language: 'json'`. Edits debounce-call `setResume(parsed)` on valid JSON; invalid JSON keeps the prior store value and surfaces `JSON: …` in the editor header in danger color.
+- `JdMatchPanel` extends with an **Apply** button per suggestion that calls `applySuggestion` + `setResume`. Applied state is per-analysis (resets on Analyze).
+
 ### 2.14 TemplatePickerModal (`src/components/templates/TemplatePickerModal.tsx` — Module 6)
 - Modal listing every registered template as a card (name + description + selected badge).
 - Opens from FileTree footer "Browse templates" button. Esc / backdrop click closes; focus returns to trigger.

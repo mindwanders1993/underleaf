@@ -73,4 +73,20 @@ describe('useProjectStore — structured mode (Module 5)', () => {
     expect(useProjectStore.getState().llmSettings.provider).toBe('ollama')
     expect(useProjectStore.getState().llmSettings.apiKey).toBe('KEY')
   })
+
+  it('setResume fully replaces resume; setResume(null) clears it', () => {
+    useProjectStore.getState().setProjectMode('structured', sampleResume, DEFAULT_TEMPLATE_ID)
+    useProjectStore.getState().setResume({
+      basics: { name: 'New' },
+      work: [],
+      education: [],
+      projects: [],
+      skills: [],
+    })
+    expect(useProjectStore.getState().currentProject!.resume!.basics.name).toBe('New')
+    expect(useProjectStore.getState().currentProject!.resume!.work).toEqual([])
+
+    useProjectStore.getState().setResume(null)
+    expect(useProjectStore.getState().currentProject!.resume).toBeUndefined()
+  })
 })
