@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type {
   Project,
   ProjectFile,
+  ProjectMode,
   CompilationState,
   EditorSettings,
   UIState,
@@ -10,11 +11,14 @@ import type {
   CompileError,
   AuthUser,
 } from '../types/project'
+import type { ResumeData } from '../types/resume'
+import { getTemplate } from '../templates'
 
 // Default mock LaTeX project
 const DEFAULT_PROJECT: Project = {
   id: 'local-demo',
   name: 'My First Project',
+  mode: 'raw',
   mainFile: 'main.tex',
   files: [
     {
@@ -92,6 +96,12 @@ interface ProjectStoreState {
   createFile: (fileName: string, type: 'tex' | 'bib' | 'image' | 'other', initialContent?: string) => void
   deleteFile: (fileName: string) => void
   renameFile: (oldName: string, newName: string) => void
+
+  // Resume / template actions (Module 5)
+  setProjectMode: (mode: ProjectMode, seedResume?: ResumeData, seedTemplateId?: string) => void
+  updateResume: (patch: Partial<ResumeData>) => void
+  setTemplate: (templateId: string) => void
+  ejectToRaw: () => void
 
   // Compilation Actions
   setCompileStatus: (status: CompileStatus) => void
@@ -214,6 +224,67 @@ export const useProjectStore = create<ProjectStoreState>((set) => ({
           ...state.currentProject,
           files: updatedFiles,
           mainFile: nextMainFile,
+        },
+      }
+    }),
+
+  // Resume / template actions (Module 5)
+  setProjectMode: (mode, seedResume, seedTemplateId) =>
+    set((state) => {
+      if (!state.currentProject) return {}
+      const next: Project = { ...state.currentProject, mode }
+      if (mode === 'structured') {
+        if (!next.resume && seedResume) next.resume = seedResume
+        if (!next.templateId && seedTemplateId) next.templateId = seedTemplateId
+      }
+      return { currentProject: next }
+    }),
+
+  updateResume: (patch) =>
+    set((state) => {
+      if (!state.currentProject) return {}
+      const base: ResumeData = state.currentProject.resume ?? {
+        basics: { name: '' },
+        work: [],
+        education: [],
+        projects: [],
+        skills: [],
+      }
+      return {
+        currentProject: {
+          ...state.currentProject,
+          resume: { ...base, ...patch },
+        },
+      }
+    }),
+
+  setTemplate: (templateId) =>
+    set((state) => {
+      if (!state.currentProject) return {}
+      return {
+        currentProject: { ...state.currentProject, templateId },
+      }
+    }),
+
+  ejectToRaw: () =>
+    set((state) => {
+      const project = state.currentProject
+      if (!project || project.mode !== 'structured' || !project.resume) return {}
+      const template = getTemplate(project.templateId)
+      if (!template) return {}
+
+      const rendered = template.render(project.resume)
+      const mainTex: ProjectFile = { name: 'main.tex', type: 'tex', content: rendered.mainTex }
+      const merged: ProjectFile[] = [mainTex, ...rendered.files.filter((f) => f.name !== 'main.tex')]
+
+      return {
+        currentProject: {
+          ...project,
+          mode: 'raw',
+          files: merged,
+          mainFile: 'main.tex',
+          resume: undefined,
+          templateId: undefined,
         },
       }
     }),

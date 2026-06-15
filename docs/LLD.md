@@ -105,6 +105,26 @@ stateDiagram-v2
 ### 2.9 StorageService
 **Superseded by §2.5b Persistence (Module 4)**. Zip export remains a future module. Keep this entry as a pointer.
 
+### 2.11 ResumeData (`src/types/resume.ts` — Module 5)
+- Typed schema for the structured-mode resume payload.
+- Sections: `basics`, `work[]`, `education[]`, `projects[]`, `skills[]` (grouped category → items), optional `awards[]`.
+- Loosely inspired by JSON Resume, deliberately simpler — TypeScript is the only validator for now; zod arrives with the Module 7 form editor.
+
+### 2.12 TemplateRenderer (`src/templates/*` — Module 5)
+- Interface: `{ id, name, description, render(data: ResumeData): { mainTex, files: ProjectFile[] } }`.
+- Registry in `src/templates/index.ts` keyed by id; `getTemplate(id)` lookup, `listTemplates()` enumeration, `DEFAULT_TEMPLATE_ID` for new projects.
+- First template: `src/templates/jakes-resume/` — single-column, ATS-friendly developer resume using only `geometry`, `enumitem`, `hyperref`, `titlesec` (all available under SwiftLaTeX).
+- All user content runs through `escapeLatex` (single-pass char-class regex — never double-escapes braces emitted by other replacements).
+- Sample fixture in `src/templates/sampleResume.ts` is seeded when a user first switches to structured mode.
+
+### 2.13 Dual-mode Project (Module 5)
+- `Project.mode: 'raw' | 'structured'` with optional `resume: ResumeData` and `templateId: string` companions.
+- Store actions added: `setProjectMode(mode, seedResume?, seedTemplateId?)`, `updateResume(patch)`, `setTemplate(id)`, `ejectToRaw()`.
+- `ejectToRaw` is one-way: renders the resume via the current template into `files[]`, sets `mainFile = 'main.tex'`, flips `mode = 'raw'`, clears `resume` + `templateId`.
+- `loadProject()` in `src/persistence/localProject.ts` normalises legacy saves (`mode ??= 'raw'`).
+- `useCompileTrigger` branches on `mode`: in `structured`, it calls `template.render(resume)` and feeds the generated `main.tex` + companion files to the engine; in `raw`, the existing path is unchanged.
+- FileTree footer exposes a toggle: "Switch to structured" (seeds from `sampleResume` + `jakes-resume`) or "Eject to raw .tex" (calls `ejectToRaw`).
+
 ### 2.10 Toolbar
 - **Purpose:** Top navigation and action bar.
 - **Design:**
