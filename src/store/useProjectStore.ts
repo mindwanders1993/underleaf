@@ -103,6 +103,7 @@ interface ProjectStoreState {
   // Resume / template actions (Module 5)
   setProjectMode: (mode: ProjectMode, seedResume?: ResumeData, seedTemplateId?: string) => void
   updateResume: (patch: Partial<ResumeData>) => void
+  setResume: (resume: ResumeData | null) => void
   setTemplate: (templateId: string) => void
   ejectToRaw: () => void
 
@@ -261,6 +262,17 @@ export const useProjectStore = create<ProjectStoreState>((set) => ({
         currentProject: {
           ...state.currentProject,
           resume: { ...base, ...patch },
+        },
+      }
+    }),
+
+  setResume: (resume) =>
+    set((state) => {
+      if (!state.currentProject) return {}
+      return {
+        currentProject: {
+          ...state.currentProject,
+          resume: resume ?? undefined,
         },
       }
     }),

@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useProjectStore } from '../../store/useProjectStore'
 import { analyzeJobDescription, type JdMatchResult } from '../../ai/jdMatcher'
+import { applySuggestion } from '../../ai/applySuggestion'
 import { getLLMClient, isProviderConfigured } from '../../llm'
 
 const JdMatchPanel = () => {
   const resume = useProjectStore((s) => s.currentProject?.resume)
+  const setResume = useProjectStore((s) => s.setResume)
   const llmSettings = useProjectStore((s) => s.llmSettings)
   const configured = isProviderConfigured(llmSettings)
 
@@ -12,6 +14,8 @@ const JdMatchPanel = () => {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<JdMatchResult | null>(null)
+  const [applied, setApplied] = useState<Record<number, true>>({})
+  const [applyErrors, setApplyErrors] = useState<Record<number, string>>({})
 
   if (!resume) return null
 
@@ -20,6 +24,8 @@ const JdMatchPanel = () => {
     setBusy(true)
     setError(null)
     setResult(null)
+    setApplied({})
+    setApplyErrors({})
     try {
       const client = getLLMClient(llmSettings)
       const r = await analyzeJobDescription(resume, jd, client)
@@ -29,6 +35,24 @@ const JdMatchPanel = () => {
     } finally {
       setBusy(false)
     }
+  }
+
+  const handleApply = (index: number) => {
+    if (!result || !resume) return
+    const suggestion = result.suggestions[index]
+    if (!suggestion) return
+    const outcome = applySuggestion(resume, suggestion)
+    if (!outcome.ok) {
+      setApplyErrors((prev) => ({ ...prev, [index]: outcome.reason }))
+      return
+    }
+    setResume(outcome.resume)
+    setApplied((prev) => ({ ...prev, [index]: true }))
+    setApplyErrors((prev) => {
+      const next = { ...prev }
+      delete next[index]
+      return next
+    })
   }
 
   return (
@@ -88,7 +112,7 @@ const JdMatchPanel = () => {
             <>
               <h4 style={{ margin: '12px 0 6px' }}>Suggested rewrites</h4>
               {result.suggestions.map((s, i) => (
-                <div key={i} className="ul-jd__suggestion">
+                <div key={i} className="ul-jd__suggestion" data-testid={`ul-jd-suggestion-${i}`}>
                   <div style={{ marginBottom: 4, color: 'var(--color-text-secondary)' }}>
                     Original
                   </div>
@@ -99,6 +123,22 @@ const JdMatchPanel = () => {
                   <code>{s.rewrite}</code>
                   <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
                     Why: {s.reason}
+                  </div>
+                  <div className="ul-jd__row">
+                    <button
+                      type="button"
+                      className="ul-jd__btn"
+                      onClick={() => handleApply(i)}
+                      disabled={!!applied[i]}
+                      data-testid={`ul-jd-apply-${i}`}
+                    >
+                      {applied[i] ? 'Applied' : 'Apply'}
+                    </button>
+                    {applyErrors[i] && (
+                      <span className="ul-jd__status" role="alert">
+                        {applyErrors[i]}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
