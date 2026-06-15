@@ -34,15 +34,17 @@ flowchart TD
   - **Shortcuts:** Binds `Cmd+Enter` (or `Ctrl+Enter`) to trigger a compilation action in the Store.
 - **State Integration:** Controlled component bound to the currently selected file in `ProjectStore`. Debounces `onChange` events by 500ms before dispatching `updateFileContent`.
 
-### 2.3 CompilerService
-- **Purpose:** Manages the SwiftLaTeX WASM binary in a background thread.
-- **Design:** 
-  - Dedicated `compiler.worker.ts` initialized on app load.
-  - **Message Protocol:**
-    - `INIT`: Main thread sends initialization request.
-    - `COMPILE`: Main thread sends file array. Worker writes them to MemFS using `writeMemFSFile`, runs `compileLaTeX()`.
-    - `RESULT`: Worker sends back `Uint8Array` of PDF and log string.
-    - `ERROR`: Worker reports fatal crash.
+### 2.3 CompilerService (`src/engine/*` — Module 2)
+- **Purpose:** Manages the SwiftLaTeX WASM binary. The engine already runs in its own Web Worker (shipped by SwiftLaTeX itself); we wrap it behind a thin `LatexEngine` interface.
+- **Files:**
+  - `src/engine/types.ts` — `LatexEngine`, `LatexCompileInput`, `LatexCompileResult`, `EngineStatus`.
+  - `src/engine/swiftLatexEngine.ts` — Adapter. Lazily injects `<script src="/swiftlatex/PdfTeXEngine.js">`, instantiates `window.PdfTeXEngine`, calls `loadEngine()`, exposes `compile()`.
+  - `src/engine/errorParser.ts` — pdfTeX log → `CompileError[]`.
+  - `src/engine/index.ts` — `getLatexEngine()` singleton factory.
+  - `src/hooks/useCompileTrigger.ts` — Mounted in `App.tsx`; subscribes to `compilationState.status`. When it flips to `COMPILING`, runs the engine and dispatches `setCompilationResult`.
+- **Asset pipeline:** Engine WASM/JS lives in `public/swiftlatex/` (gitignored). `scripts/fetch-swiftlatex.mjs` (npm script `fetch:engine`) vendors them from the TeXlyre fork.
+- **Vite dev headers:** `vite.config.ts` sets `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` so SwiftLaTeX's `SharedArrayBuffer` works.
+- **State flow:** `MonacoEditor` Ctrl+Enter → `setCompileStatus('COMPILING')` → `useCompileTrigger` effect → engine compile → `setCompilationResult(blobUrl, logs, errors)`.
 - **State Machine:**
 ```mermaid
 stateDiagram-v2
