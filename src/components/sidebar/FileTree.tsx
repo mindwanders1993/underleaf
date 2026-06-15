@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   BookText,
+  Cloud,
   FileCode,
   FileText,
   Image as ImageIcon,
@@ -15,6 +16,7 @@ import { DEFAULT_TEMPLATE_ID } from '../../templates'
 import { sampleResume } from '../../templates/sampleResume'
 import TemplatePickerModal from '../templates/TemplatePickerModal'
 import AssistantDrawer from '../ai/AssistantDrawer'
+import BackupModal from '../backup/BackupModal'
 import type { ProjectFile } from '../../types/project'
 import './FileTree.css'
 
@@ -46,6 +48,8 @@ const FileTree = () => {
   const pickerTriggerRef = useRef<HTMLButtonElement>(null)
   const [assistantOpen, setAssistantOpen] = useState(false)
   const assistantTriggerRef = useRef<HTMLButtonElement>(null)
+  const [backupOpen, setBackupOpen] = useState(false)
+  const backupTriggerRef = useRef<HTMLButtonElement>(null)
 
   const [creating, setCreating] = useState<{ name: string; type: ProjectFile['type'] } | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
@@ -340,6 +344,16 @@ const FileTree = () => {
         >
           <Sparkles size={14} /> AI Assist
         </button>
+
+        <button
+          type="button"
+          className="ul-file-tree__mode-btn"
+          onClick={() => setBackupOpen(true)}
+          ref={backupTriggerRef}
+          data-testid="ul-backup-btn"
+        >
+          <Cloud size={14} /> Backup &amp; sync
+        </button>
       </div>
 
       <TemplatePickerModal
@@ -365,6 +379,15 @@ const FileTree = () => {
         onClose={() => {
           setAssistantOpen(false)
           queueMicrotask(() => assistantTriggerRef.current?.focus())
+        }}
+      />
+
+      <BackupModal
+        key={backupOpen ? 'open' : 'closed'}
+        open={backupOpen}
+        onClose={() => {
+          setBackupOpen(false)
+          queueMicrotask(() => backupTriggerRef.current?.focus())
         }}
       />
     </div>
