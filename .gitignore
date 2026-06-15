@@ -12,6 +12,20 @@ dist
 dist-ssr
 *.local
 
+# Vendored SwiftLaTeX engine (downloaded via npm run fetch:engine)
+public/swiftlatex/*
+!public/swiftlatex/.gitkeep
+!public/swiftlatex/README.md
+
+# Agent fleet runtime state
+agent_queue/in/*
+!agent_queue/in/.gitkeep
+agent_queue/out/*
+!agent_queue/out/.gitkeep
+agent_queue/logs/*
+!agent_queue/logs/.gitkeep
+agent_queue/in/.done
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
