@@ -1,0 +1,221 @@
+.ul-learn__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 26, 0.55);
+  z-index: 90;
+}
+
+.ul-learn {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(720px, 96vw);
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.35);
+  z-index: 91;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-ui);
+  color: var(--color-text-primary);
+}
+
+.ul-learn__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  flex-shrink: 0;
+}
+
+.ul-learn__title {
+  margin: 0;
+  font-family: var(--font-hero);
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.ul-learn__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.ul-learn__back:hover {
+  background: var(--color-surface2);
+  color: var(--color-text-primary);
+}
+
+.ul-learn__close {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.ul-learn__close:hover {
+  background: var(--color-surface2);
+  color: var(--color-text-primary);
+}
+
+.ul-learn__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.ul-learn__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ul-learn__card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--spacing-md);
+  background: var(--color-surface2);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  transition: border-color 120ms ease;
+}
+
+.ul-learn__card:hover,
+.ul-learn__card:focus-visible {
+  border-color: var(--color-accent-primary);
+  outline: none;
+}
+
+.ul-learn__card-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.ul-learn__card-summary {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.ul-learn__card-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+}
+
+.ul-learn__tag {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.ul-learn__post {
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.ul-learn__post h1 {
+  font-family: var(--font-hero);
+  margin-top: 0;
+  font-size: 1.4rem;
+}
+
+.ul-learn__post h2 {
+  font-family: var(--font-hero);
+  font-size: 1.1rem;
+  margin-top: var(--spacing-lg);
+}
+
+.ul-learn__post h3 {
+  font-size: 1rem;
+  margin-top: var(--spacing-md);
+}
+
+.ul-learn__post p {
+  margin: 0.6em 0;
+}
+
+.ul-learn__post ul,
+.ul-learn__post ol {
+  margin: 0.6em 0;
+  padding-left: 1.4em;
+}
+
+.ul-learn__post li {
+  margin-bottom: 6px;
+}
+
+.ul-learn__post a {
+  color: var(--color-accent-alt);
+}
+
+.ul-learn__post code {
+  background: var(--color-surface2);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-size: 0.85em;
+  font-family: var(--font-code);
+}
+
+.ul-learn__post pre {
+  background: var(--color-surface2);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 10px;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  font-family: var(--font-code);
+  line-height: 1.5;
+}
+
+.ul-learn__post pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.ul-learn__post blockquote {
+  border-left: 3px solid var(--color-accent-alt);
+  padding-left: var(--spacing-md);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.ul-learn__source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--spacing-md);
+  font-size: 0.8rem;
+  color: var(--color-accent-alt);
+}
