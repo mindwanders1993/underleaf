@@ -7,19 +7,17 @@ This directory holds the **vendored SwiftLaTeX PdfTeX engine**. The files are NO
 | File | Purpose |
 |------|---------|
 | `PdfTeXEngine.js` | Public engine wrapper (sets `window.PdfTeXEngine`). |
-| `swiftlatexpdftex.js` | Emscripten glue. |
+| `swiftlatexpdftex.js` | Emscripten glue + Web Worker (engine spawns a Worker pointing at this same URL). |
 | `swiftlatexpdftex.wasm` | The pdfTeX WASM binary. |
-| `swiftlatexpdftex.worker.js` | Web Worker used by the engine. |
 
 ## Default source
 
-`https://raw.githubusercontent.com/TeXlyre/swiftlatex/main/PdfTeXEngine/*`
+`https://www.swiftlatex.com/*` — official hosted artifacts (~6 MB total).
 
-If TeXlyre rearranges their tree, set `SWIFTLATEX_BASE_URL` before running the script:
+If the host moves, set `SWIFTLATEX_BASE_URL` before running the script:
 
 ```bash
-SWIFTLATEX_BASE_URL="https://raw.githubusercontent.com/SwiftLaTeX/SwiftLaTeX/master/PdfTeXEngine" \
-  npm run fetch:engine
+SWIFTLATEX_BASE_URL="https://your-mirror.example.com" npm run fetch:engine
 ```
 
 ## How it loads at runtime

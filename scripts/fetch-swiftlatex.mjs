@@ -9,15 +9,15 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const TARGET_DIR = resolve(ROOT, 'public/swiftlatex')
-const BASE_URL =
-  process.env.SWIFTLATEX_BASE_URL ??
-  'https://raw.githubusercontent.com/TeXlyre/swiftlatex/main/PdfTeXEngine'
+// www.swiftlatex.com hosts the prebuilt engine. swiftlatexpdftex.js is both the
+// loader and the worker script — the engine spawns a Worker pointing at the same
+// URL. So we vendor 3 files, not 4.
+const BASE_URL = process.env.SWIFTLATEX_BASE_URL ?? 'https://www.swiftlatex.com'
 
 const FILES = [
   'PdfTeXEngine.js',
   'swiftlatexpdftex.js',
   'swiftlatexpdftex.wasm',
-  'swiftlatexpdftex.worker.js',
 ]
 
 async function alreadyVendored() {
