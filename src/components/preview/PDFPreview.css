@@ -1,0 +1,103 @@
+.ul-pdf-preview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--color-surface2);
+}
+
+.ul-pdf-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  flex-shrink: 0;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.ul-pdf-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.ul-pdf-toolbar__spacer {
+  flex: 1;
+}
+
+.ul-pdf-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface2);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.ul-pdf-toolbar button:hover:not(:disabled) {
+  background: var(--color-border);
+}
+
+.ul-pdf-toolbar button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ul-pdf-toolbar__page-input {
+  width: 48px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface2);
+  color: var(--color-text-primary);
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.ul-pdf-toolbar__page-input:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+}
+
+.ul-pdf-toolbar__zoom-label {
+  min-width: 48px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ul-pdf-canvas {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-md);
+}
+
+.ul-pdf-canvas__inner {
+  display: inline-block;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  background: #fff;
+}
+
+.ul-pdf-status {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+}
