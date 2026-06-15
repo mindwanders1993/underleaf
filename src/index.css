@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import './styles/variables.css';
+@import './styles/glass.css';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-ui);
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-hero);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+code, pre {
+  font-family: var(--font-code);
+}
+
+a {
+  color: var(--color-accent-alt);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-accent-primary);
+}
+
+button {
+  font-family: var(--font-ui);
+  cursor: pointer;
+}

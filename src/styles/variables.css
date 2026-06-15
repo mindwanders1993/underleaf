@@ -1,0 +1,48 @@
+/* src/styles/variables.css */
+:root {
+  /* Fonts */
+  --font-hero: 'Space Grotesk', sans-serif;
+  --font-ui: 'Inter', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+
+  /* Dark Mode (default) */
+  --color-bg: #0A0E1A;              /* Deep space navy */
+  --color-surface: #111827;         /* Cards/Panels */
+  --color-surface2: #1C2333;        /* Active/Elevated panels */
+  --color-border: #2D3748;          /* Subtly contrasting dividers */
+
+  --color-accent-primary: #6EE7B7;  /* Mint green (Compile button, active states) */
+  --color-accent-alt: #818CF8;      /* Soft indigo (Links, secondary CTAs) */
+  --color-danger: #F87171;          /* Error notifications/logs */
+  --color-warning: #FBBF24;         /* Warning items */
+
+  --color-text-primary: #F1F5F9;    /* Title and main body text */
+  --color-text-secondary: #94A3B8;  /* Labels, descriptors, and subtext */
+  --color-text-muted: #475569;      /* Placeholders */
+
+  /* Spacing & Layout */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+}
+
+[data-theme="light"] {
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface2: #F1F5F9;
+  --color-border: #E2E8F0;
+  
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94A3B8;
+
+  --color-accent-primary: #059669;  /* Darker mint for proper accessibility */
+  --color-accent-alt: #4F46E5;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+}
