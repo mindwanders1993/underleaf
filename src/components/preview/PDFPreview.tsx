@@ -5,6 +5,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
 import './pdfWorker'
 import './PDFPreview.css'
+import ExportMenu from './ExportMenu'
 
 const ZOOM_MIN = 0.25
 const ZOOM_MAX = 4.0
@@ -182,6 +183,7 @@ const PDFPreview = ({ file }: Props) => {
           >
             <Maximize2 size={16} />
           </button>
+          <ExportMenu />
         </div>
       </div>
 
