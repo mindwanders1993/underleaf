@@ -112,4 +112,29 @@ describe('FileTree', () => {
     const mainTex = ejected.files.find((f) => f.name === 'main.tex')!.content
     expect(mainTex).toContain('\\documentclass')
   })
+
+  it('Browse templates opens picker; picking from raw mode flips to structured + sets templateId', () => {
+    render(<FileTree />)
+    fireEvent.click(screen.getByTestId('ul-templates-btn'))
+    const deedyCard = screen.getByText(/Deedy/i).closest('button[data-template-id]')!
+    fireEvent.click(deedyCard)
+
+    const after = useProjectStore.getState().currentProject!
+    expect(after.mode).toBe('structured')
+    expect(after.templateId).toBe('deedy-cv')
+    expect(after.resume?.basics.name).toBeTruthy()
+  })
+
+  it('Browse templates while in structured mode updates only templateId', () => {
+    render(<FileTree />)
+    fireEvent.click(screen.getByTestId('ul-mode-toggle'))
+    expect(useProjectStore.getState().currentProject!.templateId).toBe('jakes-resume')
+
+    fireEvent.click(screen.getByTestId('ul-templates-btn'))
+    const awesomeCard = screen.getByText(/Awesome-CV/i).closest('button[data-template-id]')!
+    fireEvent.click(awesomeCard)
+
+    expect(useProjectStore.getState().currentProject!.templateId).toBe('awesome-cv')
+    expect(useProjectStore.getState().currentProject!.mode).toBe('structured')
+  })
 })
