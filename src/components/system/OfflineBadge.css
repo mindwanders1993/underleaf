@@ -1,0 +1,30 @@
+.ul-offline-badge {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-warning);
+  border-radius: 999px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 200;
+}
+
+.ul-offline-badge__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  animation: ul-offline-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ul-offline-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
