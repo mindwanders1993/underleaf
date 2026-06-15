@@ -65,4 +65,12 @@ describe('useProjectStore — structured mode (Module 5)', () => {
     useProjectStore.getState().ejectToRaw()
     expect(useProjectStore.getState().currentProject).toEqual(before)
   })
+
+  it('setLlmSettings merges patches', () => {
+    useProjectStore.getState().setLlmSettings({ provider: 'ollama', model: 'qwen3:8b' })
+    expect(useProjectStore.getState().llmSettings.provider).toBe('ollama')
+    useProjectStore.getState().setLlmSettings({ apiKey: 'KEY' })
+    expect(useProjectStore.getState().llmSettings.provider).toBe('ollama')
+    expect(useProjectStore.getState().llmSettings.apiKey).toBe('KEY')
+  })
 })

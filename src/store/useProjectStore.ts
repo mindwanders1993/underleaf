@@ -13,6 +13,8 @@ import type {
 } from '../types/project'
 import type { ResumeData } from '../types/resume'
 import { getTemplate } from '../templates'
+import type { LLMSettings } from '../llm'
+import { DEFAULT_LLM_SETTINGS } from '../llm'
 
 // Default mock LaTeX project
 const DEFAULT_PROJECT: Project = {
@@ -88,6 +90,7 @@ interface ProjectStoreState {
   editorSettings: EditorSettings
   uiState: UIState
   authState: AuthState
+  llmSettings: LLMSettings
 
   // Project Actions
   setCurrentProject: (project: Project | null) => void
@@ -116,6 +119,9 @@ interface ProjectStoreState {
 
   // Auth Actions
   setAuth: (user: AuthUser | null) => void
+
+  // LLM Actions (Module 7)
+  setLlmSettings: (patch: Partial<LLMSettings>) => void
 }
 
 export const useProjectStore = create<ProjectStoreState>((set) => ({
@@ -141,6 +147,7 @@ export const useProjectStore = create<ProjectStoreState>((set) => ({
     user: null,
     isLoggedIn: false,
   },
+  llmSettings: DEFAULT_LLM_SETTINGS,
 
   // Project Actions
   setCurrentProject: (project) => set({ currentProject: project }),
@@ -344,4 +351,10 @@ export const useProjectStore = create<ProjectStoreState>((set) => ({
         isLoggedIn: !!user,
       },
     }),
+
+  // LLM Actions (Module 7)
+  setLlmSettings: (patch) =>
+    set((state) => ({
+      llmSettings: { ...state.llmSettings, ...patch },
+    })),
 }))
